@@ -1,0 +1,8 @@
+# OS and editor files
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Temporary validation output
+.tmp/
