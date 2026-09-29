@@ -1,7 +1,7 @@
 ---
 name: commentsplotion
 description: Use when documenting code with useful native comments.
-version: 0.1.0
+version: 0.2.0
 author: light, Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -13,7 +13,9 @@ metadata:
 
 # Commentsplotion
 
-Apply a documentation pass to code and configuration without changing behavior. Commentsplotion means an explosion of useful context—not maximum comment count. Write for a capable teammate in their first week: explain what implementation alone cannot make obvious.
+Apply a documentation pass to code and configuration without changing behavior. Commentsplotion means an explosion of useful context—not maximum comment count. Write for a capable teammate or coding agent encountering the code for the first time: preserve knowledge the implementation does not make quickly inferable.
+
+> Comment aggressively when a comment communicates useful information that cannot be quickly inferred from the code. Avoid comments that narrate syntax, repeat identifiers, or restate what the code obviously does.
 
 ## When to Use
 
@@ -24,13 +26,13 @@ Use this skill:
 - across mixed-language folders or repositories;
 - when the user invokes `/commentsplotion`.
 
-For ordinary coding work, update documentation near changed logic rather than turning the task into an unrelated repository-wide rewrite. Do not use this skill to add decorative comments, normalize unrelated prose, or alter behavior merely to make documentation easier.
+For ordinary coding work, update documentation near changed logic and its immediate context rather than turning the task into an unrelated repository-wide rewrite. Preserve useful comments, improve weak ones when evidence is available, and remove comments made inaccurate by the change. Do not use this skill to add decorative comments, normalize unrelated prose, or alter behavior merely to make documentation easier.
 
 ## Core Standard
 
-Document verified information that helps future maintainers recover intent:
+Optimize for information gained per token. A comment earns its place when it preserves verified knowledge that a maintainer or agent would otherwise need meaningful exploration to recover, such as:
 
-- purpose, business rules, and branch rationale;
+- why code exists, business rules, and branch rationale;
 - input semantics, units, constraints, and precedence;
 - result meaning and important edge behavior;
 - preconditions, postconditions, and invariants;
@@ -38,19 +40,49 @@ Document verified information that helps future maintainers recover intent:
 - database, network, filesystem, cache, event, process, and UI side effects;
 - failure paths, partial success, retries, rollback, and recovery;
 - ordering, concurrency, synchronization, and lifecycle assumptions;
-- security-sensitive decisions, compatibility workarounds, and operational constraints.
+- security or privacy requirements, compatibility history, external-system quirks, performance trade-offs, and operational constraints;
+- scoping boundaries, especially where identifiers or data are only unique or valid within a tenant, facility, region, account, or transaction;
+- architectural relationships between distant code, authoritative sources of truth, and consequences that are not visible at the edit site;
+- intentional oddities, fragile assumptions, and conditions that would make a workaround safe to remove.
 
-Truth beats templates. Never speculate about guarantees the code does not enforce. Do not claim validation, atomicity, idempotency, thread safety, retries, caching, persistence, security, or rollback without evidence from implementation, tests, or authoritative project documentation. Resolve contradictions instead of documenting both as fact.
+Truth beats coverage. Establish rationale from the task context, implementation, tests, authoritative documentation, or history before recording it. Never invent a reason for unusual code or turn an inference into an authoritative claim. If uncertainty itself helps prevent a bad change, state its limits precisely; otherwise leave the rationale undocumented and report the knowledge gap outside the code. Do not claim validation, atomicity, idempotency, thread safety, retries, caching, persistence, security, or rollback without evidence. Resolve contradictions instead of documenting both as fact.
 
-Types and readable code already communicate structure. Do not restate names, signatures, obvious assignments, or straightforward control flow. Prefer one high-value explanation per logical step over micro-comments on each line.
+Types and readable code already communicate structure. Do not restate names, signatures, literal values, obvious assignments, straightforward control flow, or clearly named calls. Comments such as “set loading,” “fetch the user,” and “increment the counter” are context cost with no durable knowledge. Prefer one compact explanation of policy, rationale, or constraint over micro-comments on each line.
+
+## Comment Roles
+
+Use natural prose rather than mechanically prefixing every comment with a category. Still distinguish the job each comment performs:
+
+- **Rationale:** why this approach or branch exists.
+- **Constraint or invariant:** what must remain true.
+- **Warning:** what can break and how a change reaches that failure.
+- **Business rule:** which domain behavior is enforced and at what scope.
+- **Integration context:** what an external API, service, library, platform, or file format requires.
+- **Architecture:** which other subsystem or source of truth governs this code and why the relationship matters.
+- **Edge case:** which unusual input, state, timing, or failure is intentionally handled.
+- **Temporary workaround:** why the workaround exists and the verifiable condition for removal.
+- **Security or privacy:** which trust boundary, authorization rule, disclosure limit, retention rule, or sensitive-data restriction applies.
+
+Labels such as `WARNING`, `HACK`, or `SECURITY` are useful only when they materially improve scanning or match repository convention. The prose must still carry the actual knowledge.
+
+## Persistent Agent Context
+
+Treat comments as durable, local context for humans and repeated AI-agent work. A strong comment can eliminate repository searches, caller tracing, history inspection, test archaeology, or user clarification—but only when it records information not already obvious nearby.
+
+- Put knowledge beside the narrowest source of truth it governs.
+- For a distant dependency, name the relevant symbol, subsystem, schema, migration, test, issue, or document and explain the relationship or consequence; do not write vague “keep in sync” notes.
+- When centralized documentation is authoritative, keep the local breadcrumb concise and point to that source instead of copying it.
+- Do not duplicate the same rationale across callers and callees. Document it at the ownership boundary; add local pointers only where a future edit would otherwise be hazardous.
+- Compress without becoming cryptic. Include the reason and consequence; omit setup a reader can recover from adjacent code.
+- Reassess comments whenever the governed code changes. Delete obsolete comments and update moved constraints in the same change.
 
 ## Complexity and Risk
 
 Choose depth per symbol or file, not per extension.
 
-- **Low complexity:** Simple mappings, formatting helpers, obvious rendering, and basic values need a short public description only when it adds meaning. Usually omit inline commentary.
-- **Medium complexity:** State transformations, reusable utilities, guarded branches, hooks, queries with business rules, and multi-phase scripts need native API documentation plus key branch, side-effect, and result semantics. Add an example when usage is not obvious.
-- **High complexity:** Authentication, authorization, billing, entitlements, webhooks, retries, reconciliation, concurrency, migrations, destructive operations, cryptography, and cross-service workflows need explicit contracts, invariants, ordering, failure behavior, side effects, and recovery notes. Use phase comments where sequence matters.
+- **Low complexity:** Simple getters, mappings, wrappers, formatting helpers, obvious rendering or UI markup, and straightforward assignments usually need no comment. Add a short public description only when it contributes domain meaning.
+- **Medium complexity:** State transformations, reusable utilities, guarded branches, hooks, queries with business rules, and multi-phase scripts often need native API documentation plus key branch, side-effect, and result semantics. Add an example only when usage is not obvious.
+- **High complexity:** Authentication, authorization, billing, entitlements, webhooks, retries, reconciliation, concurrency, migrations, destructive operations, cryptography, and cross-service workflows need explicit coverage of the applicable, non-obvious contracts, invariants, ordering, failure behavior, side effects, and recovery constraints. Use phase comments only where sequence matters.
 
 Risk can raise the documentation tier even when the code is short.
 
@@ -77,11 +109,11 @@ For mixed-language files, load each relevant reference and apply conventions by 
 2. **Exclude unsafe targets.** Skip generated, vendored, minified, bundled, compiled, binary, lock, build-output, generated-schema, and ordinary snapshot files. Document the generator or source schema instead when useful.
 3. **Detect conventions.** Inspect neighboring files, project instructions, doc tooling, and parser behavior. Repository conventions override this skill unless the user asks to standardize them.
 4. **Load references.** Use `skill_view(name='commentsplotion', file_path='references/<file>.md')` only for the file families in scope.
-5. **Review existing context.** Preserve correct rationale and human knowledge. Merge duplicate explanations, remove comments that merely narrate code, and update stale claims only when the correction is verifiable.
+5. **Review existing context.** Preserve correct rationale and human knowledge. Trace a comment to the code it governs, merge duplicate explanations, remove narration, and update or delete stale claims. Do not preserve a comment merely because it already exists.
 6. **Classify depth.** Apply the complexity and risk tier to each meaningful symbol or flow.
-7. **Document contracts and rationale.** Prefer native API documentation for public contracts and ordinary comments for internal reasoning. Put comments immediately beside what they govern.
+7. **Document contracts and rationale.** Prefer native API documentation for meaningful public contracts and ordinary comments for internal reasoning. Put comments beside the narrowest source of truth, using a concise breadcrumb when the authority lives elsewhere.
 8. **Verify behavior is unchanged.** Review the diff, then run the repository's relevant formatter, parser, linter, type checker, tests, or build.
-9. **Audit quality.** Account for every modified file and remove noise, duplication, unsupported claims, invalid syntax, and accidental secret exposure.
+9. **Audit quality.** Account for every modified file. For each added or retained comment, ask whether deleting it would lose useful knowledge that is not quickly inferable nearby. Remove noise, duplication, unsupported claims, invalid syntax, stale context, and accidental secret exposure.
 
 A repository-wide pass is complete only when every in-scope file is documented, intentionally skipped, or excluded with a reason.
 
@@ -109,7 +141,7 @@ Preserve compiler, linter, formatter, coverage, type-suppression, code-generator
 
 ### Markers and external references
 
-Use `TODO`, `FIXME`, `HACK`, `NOTE`, and warnings only when actionable or materially informative. Explain why a workaround exists and what would remove it. Preserve authoritative links and add new links only when verified and useful; state the requirement they support so context survives link rot.
+Use `TODO`, `FIXME`, `HACK`, `NOTE`, and warnings only when actionable or materially informative. Explain why a workaround exists and the verifiable condition that would remove it; do not invent missing history. Preserve authoritative links and add new links only when verified and useful; state the requirement they support so context survives link rot.
 
 ### Security
 
@@ -134,11 +166,13 @@ Before finishing, verify:
 - native API documentation is used for public contracts where appropriate;
 - standard JSON, generated files, lockfiles, binaries, vendor code, and build output were not polluted;
 - comments describe current, verifiable behavior and not merely syntax;
+- each comment has enough information value to justify its context-window cost;
 - important constraints, edge results, side effects, failures, ordering, and recovery are covered in proportion to risk;
+- business, security, privacy, data-scope, integration, architecture, and compatibility knowledge is placed at the nearest source of truth without needless duplication;
 - examples match current APIs and no secrets or production data were added;
 - existing directives, headers, metadata, and irreplaceable rationale remain intact;
 - terminology matches the surrounding domain;
 - the diff contains no unrelated formatting churn or runtime behavior changes;
 - relevant validation passes.
 
-Commentsplotion is semantic, not syntactic. Explain only the context future maintainers would otherwise have to rediscover.
+Commentsplotion is semantic, not syntactic. Preserve as much useful knowledge as practical in the code while refusing comments that merely duplicate it.

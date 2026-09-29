@@ -1,16 +1,28 @@
 # Commentsplotion
 
-Commentsplotion is a Hermes skill for adding thorough, high-signal documentation to mixed-language codebases. It explains intent, rationale, contracts, invariants, side effects, failure behavior, and operational constraints using each file type's native documentation system.
+Commentsplotion is a Hermes skill for adding high-information-density documentation to mixed-language codebases. It preserves intent, rationale, business rules, invariants, scoping boundaries, integration quirks, side effects, failure behavior, and operational constraints using each file type's native documentation system.
 
-It is not a request to maximize comment count. Straightforward code stays straightforward; documentation is concentrated where future maintainers would otherwise have to reverse-engineer decisions.
+It is not a request to maximize comment count. Straightforward code stays straightforward; documentation is concentrated where future maintainers or AI agents would otherwise have to search the repository, trace callers, inspect tests or history, or reverse-engineer decisions.
+
+The governing principle is simple:
+
+> Comment aggressively when the comment communicates useful information that cannot be quickly inferred from the code. Avoid comments that narrate syntax, repeat identifiers, or restate what the code obviously does.
 
 Repository: https://github.com/darklightblue/commentsplotion
 
 ## What `/commentsplotion` Does
 
-The skill first inspects the files in scope, determines their languages and parser constraints, excludes unsafe targets, and loads only the language references it needs. It then documents public contracts and non-obvious implementation reasoning in proportion to complexity and risk without changing runtime behavior.
+The skill first inspects the files in scope, determines their languages and parser constraints, excludes unsafe targets, and loads only the language references it needs. It then documents meaningful public contracts and non-obvious implementation reasoning in proportion to complexity and risk without changing runtime behavior.
 
-The same skill also serves as a standing coding convention: when installed for that purpose, documentation near meaningfully changed code is kept current during normal feature, fix, and refactor work.
+The same skill also serves as a standing coding convention: when installed for that purpose, documentation near meaningfully changed code is kept current during normal feature, fix, and refactor work. Existing comments are preserved when useful, improved when weak, and removed when a code change makes them stale.
+
+## Information-Density Standard
+
+A comment should ideally answer a question the code cannot answer quickly on its own: why this exists, what must remain true, which business or security rule applies, why order matters, what an external system requires, what distant subsystem owns the decision, or what would break if the code changed.
+
+Comments that only label obvious mechanics add context-window cost without preserving knowledge. Commentsplotion therefore favors one concise rationale or constraint over several line-by-line narrations. Important context stays beside the narrowest source of truth; when authority belongs in centralized documentation, a local comment points to it instead of copying it.
+
+Unknown rationale stays unknown. The skill records only what can be established from code, tests, documentation, history, or task context, and never upgrades speculation into an authoritative explanation.
 
 ## Why Progressive Disclosure
 
@@ -106,11 +118,8 @@ This approach is preferable to a duplicate copy: `SKILL.md` and all references a
 
 Edit files in this repository. Because Hermes reads the repository through `skills.external_dirs`, saved changes are the installed skill; there is no synchronization step. Start a new session when frontmatter or discovery metadata changes. For an already running session, reload the skill before relying on edited instructions.
 
-Useful checks:
+Useful check:
 
 ```text
 hermes skills list
-hermes skills check commentsplotion
 ```
-
-The Git repository is the canonical source for the skill. A local Hermes installation can load it directly through `skills.external_dirs`, so repository edits do not require a separate copy or synchronization step.
